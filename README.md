@@ -1,0 +1,1 @@
+Got tired of using online tools to convert images to .ico for my other programs. So I made this, kinda, NGL 100% vibe coded. Just drag and drop a .png or .jpg onto the form and it will save a .ico in the source file's directory 
