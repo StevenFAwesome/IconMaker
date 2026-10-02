@@ -61,57 +61,217 @@ Class MainWindow
     ''' </summary>
     ''' <param name="sourcePath">The full path to the source image file.</param>
     ''' <returns>True if conversion was successful, False otherwise.</returns>
+    'Private Function ConvertImageToIcon(sourcePath As String) As Boolean
+    '    Try
+    '        ' 1. Load the image using System.Drawing
+    '        ' *** Using fully qualified name System.Drawing.Bitmap ***
+    '        Using originalBitmap As New System.Drawing.Bitmap(sourcePath)
+
+    '            ' 2. Create a resized version of the image for the icon (TargetSize x TargetSize)
+    '            ' *** Using fully qualified name System.Drawing.Bitmap ***
+    '            Dim resizedBitmap As New System.Drawing.Bitmap(TargetSize, TargetSize)
+
+    '            ' *** Using fully qualified name System.Drawing.Graphics ***
+    '            Using g As System.Drawing.Graphics = System.Drawing.Graphics.FromImage(resizedBitmap)
+    '                ' Set interpolation mode for better quality resizing
+    '                ' *** Using fully qualified name System.Drawing.Drawing2D.InterpolationMode ***
+    '                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic
+    '                g.DrawImage(originalBitmap, 0, 0, TargetSize, TargetSize)
+    '            End Using
+
+    '            ' 3. Create the output path
+    '            Dim directory As String = Path.GetDirectoryName(sourcePath)
+    '            Dim fileNameWithoutExt As String = Path.GetFileNameWithoutExtension(sourcePath)
+    '            Dim outputPath As String = Path.Combine(directory, $"{fileNameWithoutExt}.ico")
+
+    '            ' 4. Convert the Bitmap to an Icon object
+    '            ' GetHicon() creates a handle to the GDI icon, which System.Drawing.Icon can use.
+    '            Dim iconHandle As IntPtr = resizedBitmap.GetHicon()
+
+    '            ' *** Using fully qualified name System.Drawing.Icon ***
+    '            Using icon As System.Drawing.Icon = System.Drawing.Icon.FromHandle(iconHandle)
+
+    '                ' 5. Save the Icon to the file system
+    '                Using fs As New FileStream(outputPath, FileMode.Create)
+    '                    icon.Save(fs)
+    '                End Using
+    '            End Using
+
+    '            ' Clean up the resized bitmap
+    '            resizedBitmap.Dispose()
+
+    '            Return True ' Success
+    '        End Using
+
+    '    Catch ex As Exception
+    '        ' Log the error (optional, but good practice)
+    '        System.Diagnostics.Debug.WriteLine($"Error converting {sourcePath}: {ex.Message}")
+
+    '        ' Show a message box if a critical error occurs during conversion
+    '        MessageBox.Show($"Failed to convert {Path.GetFileName(sourcePath)}. Error: {ex.Message}", "Conversion Error", MessageBoxButton.OK, MessageBoxImage.Error)
+
+    '        Return False ' Failure
+    '    End Try
+    'End Function
     Private Function ConvertImageToIcon(sourcePath As String) As Boolean
         Try
-            ' 1. Load the image using System.Drawing
-            ' *** Using fully qualified name System.Drawing.Bitmap ***
-            Using originalBitmap As New System.Drawing.Bitmap(sourcePath)
+            Dim directory As String = Path.GetDirectoryName(sourcePath)
+            Dim fileNameWithoutExt As String = Path.GetFileNameWithoutExtension(sourcePath)
+            Dim outputPath As String =
+                Path.Combine(directory, fileNameWithoutExt & ".ico")
 
-                ' 2. Create a resized version of the image for the icon (TargetSize x TargetSize)
-                ' *** Using fully qualified name System.Drawing.Bitmap ***
-                Dim resizedBitmap As New System.Drawing.Bitmap(TargetSize, TargetSize)
+            Using original As New System.Drawing.Bitmap(sourcePath)
 
-                ' *** Using fully qualified name System.Drawing.Graphics ***
-                Using g As System.Drawing.Graphics = System.Drawing.Graphics.FromImage(resizedBitmap)
-                    ' Set interpolation mode for better quality resizing
-                    ' *** Using fully qualified name System.Drawing.Drawing2D.InterpolationMode ***
-                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic
-                    g.DrawImage(originalBitmap, 0, 0, TargetSize, TargetSize)
-                End Using
+                ' Create a high-quality 256x256 image with alpha transparency
+                Using iconBitmap As New System.Drawing.Bitmap(
+                    TargetSize,
+                    TargetSize,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb)
 
-                ' 3. Create the output path
-                Dim directory As String = Path.GetDirectoryName(sourcePath)
-                Dim fileNameWithoutExt As String = Path.GetFileNameWithoutExtension(sourcePath)
-                Dim outputPath As String = Path.Combine(directory, $"{fileNameWithoutExt}.ico")
+                    Using g As System.Drawing.Graphics =
+                        System.Drawing.Graphics.FromImage(iconBitmap)
 
-                ' 4. Convert the Bitmap to an Icon object
-                ' GetHicon() creates a handle to the GDI icon, which System.Drawing.Icon can use.
-                Dim iconHandle As IntPtr = resizedBitmap.GetHicon()
+                        ' Transparent background
+                        g.Clear(System.Drawing.Color.Transparent)
 
-                ' *** Using fully qualified name System.Drawing.Icon ***
-                Using icon As System.Drawing.Icon = System.Drawing.Icon.FromHandle(iconHandle)
+                        ' High quality rendering
+                        g.CompositingMode =
+                            System.Drawing.Drawing2D.CompositingMode.SourceOver
 
-                    ' 5. Save the Icon to the file system
-                    Using fs As New FileStream(outputPath, FileMode.Create)
-                        icon.Save(fs)
+                        g.CompositingQuality =
+                            System.Drawing.Drawing2D.CompositingQuality.HighQuality
+
+                        g.InterpolationMode =
+                            System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic
+
+                        g.SmoothingMode =
+                            System.Drawing.Drawing2D.SmoothingMode.HighQuality
+
+                        g.PixelOffsetMode =
+                            System.Drawing.Drawing2D.PixelOffsetMode.HighQuality
+
+                        ' Maintain original aspect ratio
+                        Dim scale As Double =
+                            Math.Min(TargetSize / CDbl(original.Width),
+                                     TargetSize / CDbl(original.Height))
+
+                        Dim width As Integer =
+                            CInt(original.Width * scale)
+
+                        Dim height As Integer =
+                            CInt(original.Height * scale)
+
+                        ' Center the image
+                        Dim x As Integer =
+                            (TargetSize - width) \ 2
+
+                        Dim y As Integer =
+                            (TargetSize - height) \ 2
+
+                        g.DrawImage(
+                            original,
+                            New System.Drawing.Rectangle(x, y, width, height),
+                            0,
+                            0,
+                            original.Width,
+                            original.Height,
+                            System.Drawing.GraphicsUnit.Pixel)
+
+                    End Using
+
+                    ' Save the 256x256 image as PNG in memory
+                    Using pngStream As New MemoryStream()
+
+                        iconBitmap.Save(
+                            pngStream,
+                            System.Drawing.Imaging.ImageFormat.Png)
+
+                        Dim pngData() As Byte = pngStream.ToArray()
+
+                        ' Build a modern ICO containing the PNG
+                        Using fs As New FileStream(
+                            outputPath,
+                            FileMode.Create,
+                            FileAccess.Write)
+
+                            Using writer As New BinaryWriter(fs)
+
+                                ' -------------------------
+                                ' ICO HEADER
+                                ' -------------------------
+
+                                ' Reserved
+                                writer.Write(CUShort(0))
+
+                                ' Type: 1 = Icon
+                                writer.Write(CUShort(1))
+
+                                ' Number of images
+                                writer.Write(CUShort(1))
+
+
+                                ' -------------------------
+                                ' ICON DIRECTORY ENTRY
+                                ' -------------------------
+
+                                ' Width
+                                ' 0 means 256 pixels
+                                writer.Write(CByte(0))
+
+                                ' Height
+                                ' 0 means 256 pixels
+                                writer.Write(CByte(0))
+
+                                ' Color palette count
+                                writer.Write(CByte(0))
+
+                                ' Reserved
+                                writer.Write(CByte(0))
+
+                                ' Color planes
+                                writer.Write(CUShort(1))
+
+                                ' Bits per pixel
+                                writer.Write(CUShort(32))
+
+                                ' Size of PNG data
+                                writer.Write(CUInt(pngData.Length))
+
+                                ' Offset where image begins
+                                ' ICO header = 6 bytes
+                                ' Directory entry = 16 bytes
+                                writer.Write(CUInt(22))
+
+                                ' -------------------------
+                                ' PNG IMAGE DATA
+                                ' -------------------------
+
+                                writer.Write(pngData)
+
+                            End Using
+                        End Using
                     End Using
                 End Using
-
-                ' Clean up the resized bitmap
-                resizedBitmap.Dispose()
-
-                Return True ' Success
             End Using
 
+            Return True
+
         Catch ex As Exception
-            ' Log the error (optional, but good practice)
-            System.Diagnostics.Debug.WriteLine($"Error converting {sourcePath}: {ex.Message}")
 
-            ' Show a message box if a critical error occurs during conversion
-            MessageBox.Show($"Failed to convert {Path.GetFileName(sourcePath)}. Error: {ex.Message}", "Conversion Error", MessageBoxButton.OK, MessageBoxImage.Error)
+            System.Diagnostics.Debug.WriteLine(
+                $"Error converting {sourcePath}: {ex.Message}")
 
-            Return False ' Failure
+            MessageBox.Show(
+                $"Failed to convert {Path.GetFileName(sourcePath)}." &
+                Environment.NewLine &
+                Environment.NewLine &
+                ex.Message,
+                "Conversion Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error)
+
+            Return False
+
         End Try
     End Function
-
 End Class
