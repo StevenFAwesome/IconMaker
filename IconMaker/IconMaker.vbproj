@@ -6,7 +6,12 @@
     <RootNamespace>IconMaker</RootNamespace>
     <UseWPF>true</UseWPF>
     <ImportedNamespaces>System.Windows=False,System.Windows.Controls=False,System.Windows.Data=False,System.Windows.Documents=False,System.Windows.Input=False,System.Windows.Media=False,System.Windows.Media.Imaging=False,System.Windows.Navigation=False,System.Windows.Shapes=False,Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,IconMaker=True</ImportedNamespaces>
+    <ApplicationIcon>ICON2JPG.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="ICON2JPG.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Import Include="System.Windows" />
